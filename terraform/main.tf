@@ -54,7 +54,7 @@ module "eks" {
   cluster_endpoint_private_access = true
 
   vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids = concat(module.vpc.private_subnets, module.vpc.public_subnets)  # ✅ FIX: Include both
 
 #Modern AWS EKS clusters require a specific add-on called the Amazon EBS CSI Driver to communicate with AWS and create EBS volumes
 

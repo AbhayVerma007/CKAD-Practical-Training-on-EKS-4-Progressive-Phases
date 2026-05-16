@@ -65,7 +65,7 @@ app.use(locals.config);
 
 // Import Kutt's database connection
 // (In Kutt, the Knex instance is exported directly from the db.js file)
-const knex = require('./db');
+const knex = require('../db')
 
 app.get('/healthz', async (req, res) => {
   try {

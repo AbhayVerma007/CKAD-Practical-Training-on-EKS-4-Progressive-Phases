@@ -62,28 +62,12 @@ app.use(locals.config);
 // ==========================================
 // DEVOPS ASSIGNMENT: KUBERNETES READINESS PROBE
 // ==========================================
-
-// Import Kutt's database connection
-// (In Kutt, the Knex instance is exported directly from the db.js file)
-const knex = require('../db')
-
-app.get('/healthz', async (req, res) => {
-  try {
-    // Ping the PostgreSQL database (or whichever DB is configured)
-    await knex.raw('SELECT 1');
-    
-    // If the ping succeeds, the DB is reachable! Send a 200 OK.
-    return res.status(200).send('OK');
-  } catch (error) {
-    // If it fails, the DB is down or unreachable. Send a 503 Service Unavailable.
-    console.error('Health check failed: DB unreachable', error);
-    return res.status(503).send('Service Unavailable');
-  }
+app.get('/healthz', (req, res) => {
+  // Kubernetes just needs to know the Node.js web server is alive and listening.
+  // The database health is handled natively by the Postgres StatefulSet probe.
+  return res.status(200).send('OK');
 });
 // ==========================================
-
-// ... the rest of Kutt's existing code (like app.use("/", routes);) will continue below ...
-
 
 
 // template engine / serve html

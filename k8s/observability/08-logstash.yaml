@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: observability
+data:
+  logstash.conf: |
+    input {
+      beats {
+        port => 5000
+        codec => "json"
+      }
+    }
+    
+    filter {
+      if [type] == "docker" {
+        grok {
+          match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:msg}" }
+          tag_on_failure => [ "_grok_parse_failure" ]
+        }
+      }
+    }
+    
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch:9200"]
+        index => "logstash-%{+YYYY.MM.dd}"
+      }
+    }
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash
+  namespace: observability
+spec:
+  ports:
+  - port: 5000
+    targetPort: 5000
+    name: beats
+  selector:
+    app: logstash
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      containers:
+      - name: logstash
+        image: docker.elastic.co/logstash/logstash:8.5.0
+        ports:
+        - containerPort: 5000
+          name: beats
+        
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        
+        volumeMounts:
+        - name: config
+          mountPath: /usr/share/logstash/pipeline
+        
+        livenessProbe:
+          exec:
+            command:
+              - curl
+              - -f
+              - http://localhost:9600/
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        
+        readinessProbe:
+          exec:
+            command:
+              - curl
+              - -f
+              - http://localhost:9600/
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      
+      volumes:
+      - name: config
+        configMap:
+          name: logstash-config

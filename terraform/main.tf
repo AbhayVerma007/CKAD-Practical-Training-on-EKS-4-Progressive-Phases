@@ -35,7 +35,7 @@ module "vpc" {
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 
-  # FIX 2: Removed the overriding "Name" tag so subnets auto-generate proper names
+  # Removed the overriding "Name" tag so subnets auto-generate proper names
   tags = {
     Environment = var.environment
   }
@@ -54,10 +54,11 @@ module "eks" {
   cluster_endpoint_private_access = true
 
   vpc_id     = module.vpc.vpc_id
-  subnet_ids = concat(module.vpc.private_subnets, module.vpc.public_subnets)  # ✅ FIX: Include both
+  
+  # ✅ CLUSTER LEVEL: Include both so EKS can map Load Balancers to the public subnets
+  subnet_ids = concat(module.vpc.private_subnets, module.vpc.public_subnets) 
 
-#Modern AWS EKS clusters require a specific add-on called the Amazon EBS CSI Driver to communicate with AWS and create EBS volumes
-
+  # Modern AWS EKS clusters require a specific add-on called the Amazon EBS CSI Driver to communicate with AWS and create EBS volumes
   cluster_addons = {
     aws-ebs-csi-driver = {
       most_recent = true
@@ -65,7 +66,6 @@ module "eks" {
   }
 
   # Cluster security group
-
   cluster_security_group_additional_rules = {
     egress_nodes_ephemeral_ports_tcp = {
       description                = "Nodes on ephemeral ports"
@@ -78,12 +78,14 @@ module "eks" {
   }
 
   # Node group configuration
-
   eks_managed_node_groups = {
     main = {
       name            = "main-node-group"
       use_name_prefix = true
       
+      # ✅ NODE GROUP LEVEL FIX: Restrict the actual EC2 worker nodes to private subnets only
+      subnet_ids      = module.vpc.private_subnets
+     
       instance_types = [var.node_instance_type]
       
       desired_size = var.node_group_desired_size
@@ -94,10 +96,9 @@ module "eks" {
       disk_size      = 25
 
       # IAM role policies
-
       iam_role_additional_policies = {
-        AmazonEKSWorkerNodePolicy      = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-        AmazonEKS_CNI_Policy           = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+        AmazonEKSWorkerNodePolicy          = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+        AmazonEKS_CNI_Policy               = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
         AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
         AmazonEBSCSIDriverPolicy           = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
       }

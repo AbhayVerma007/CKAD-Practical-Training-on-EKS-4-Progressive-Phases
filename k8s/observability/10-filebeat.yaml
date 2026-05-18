@@ -7,6 +7,7 @@ data:
   filebeat.yaml: |
     filebeat.inputs:
     - type: container
+      format: auto      # ADDED: Automatically handles containerd or Docker logs
       enabled: true
       paths:
         - '/var/log/containers/*.log'
@@ -15,8 +16,8 @@ data:
             in_cluster: true
     
     processors:
-      - add_cloud_metadata:
-      - add_host_metadata:
+      - add_cloud_metadata: ~
+      - add_host_metadata: ~
     
     output.logstash:
       hosts: ["logstash:5000"]

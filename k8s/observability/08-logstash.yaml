@@ -8,16 +8,16 @@ data:
     input {
       beats {
         port => 5000
-        codec => "json"
+        # REMOVED: codec => "json" so it can process containerd raw text
       }
     }
     
     filter {
-      if [type] == "docker" {
-        grok {
-          match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:msg}" }
-          tag_on_failure => [ "_grok_parse_failure" ]
-        }
+      # REMOVED: if [type] == "docker" wrapper
+      # Now it processes all incoming logs regardless of the container runtime
+      grok {
+        match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:msg}" }
+        tag_on_failure => [ "_grok_parse_failure" ]
       }
     }
     
@@ -71,7 +71,7 @@ spec:
             memory: 512Mi
           limits:
             cpu: 500m
-            memory: 1Gi
+            memory: 1Gi # Kept the upgraded memory limit to prevent OOMKilled
         
         volumeMounts:
         - name: config

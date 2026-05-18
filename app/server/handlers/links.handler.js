@@ -585,8 +585,8 @@ async function redirectProtected(req, res) {
 };
 
 async function redirectCustomDomainHomepage(req, res, next) {
-  const host = utils.removeWww(req.headers.host);
-  if (host === env.DEFAULT_DOMAIN) {
+  const host = utils.removeWww(req.headers.host || req.hostname || "");
+  if (!host || host === env.DEFAULT_DOMAIN) {
     next();
     return;
   }

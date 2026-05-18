@@ -349,7 +349,7 @@ function sleep(ms) {
 }
 
 function removeWww(host) {
-  return host.replace("www.", "");
+  return typeof host === "string" ? host.replace("www.", "") : "";
 };
 
 function registerHandlebarsHelpers() {

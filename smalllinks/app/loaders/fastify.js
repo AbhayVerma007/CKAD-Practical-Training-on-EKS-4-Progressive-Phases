@@ -34,10 +34,6 @@ module.exports = (fastify, logger, controller, helmet, fastifySwagger, cors) => 
         credentials: true,
       });
 
-      fastify.options('*', (request, reply) => {
-        reply.code(204).send();
-      });
-
       // We don't need swagger in production
       if (env !== 'production') {
         fastify.register(fastifySwagger, {

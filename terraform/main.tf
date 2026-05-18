@@ -97,7 +97,7 @@ module "eks" {
 
 # ECR Repository
 resource "aws_ecr_repository" "app" {
-  name                 = "${var.cluster_name}"
+  name                 = var.app_name
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -105,6 +105,6 @@ resource "aws_ecr_repository" "app" {
   }
 
   tags = {
-    Name = "${var.cluster_name}-ecr"
+    Name = "${var.app_name}-ecr"
   }
 }

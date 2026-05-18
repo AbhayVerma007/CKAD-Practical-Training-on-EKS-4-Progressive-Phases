@@ -4,12 +4,12 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'app/**'          # Only trigger on app changes
-      - '.github/workflows/build-and-push.yaml'
+      - 'smalllinks/**'          # Only trigger on the smalllinks service changes
+      - '.github/workflows/build-and-push.yml'
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: devops-app    # ← FIX: Match your actual ECR repo name
+  ECR_REPOSITORY: smalllinks    # Build and push the new smalllinks image
 
 jobs:
   build-and-push:
@@ -45,7 +45,7 @@ jobs:
           
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
                        -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
-                       ./app
+                       ./smalllinks
           
           echo "⬆️ Pushing image to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

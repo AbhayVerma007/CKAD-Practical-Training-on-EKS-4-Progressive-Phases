@@ -4,17 +4,16 @@ metadata:
   name: app-config
   namespace: app
   labels:
-    app: kutt
+    app: smalllinks
 data:
-  # Tell Kutt to use Postgres instead of SQLite
-  DB_CLIENT: "pg"
-  DB_HOST: "postgres"
-  DB_PORT: "5432"
-  DB_SSL: "false"
-  # Enable Redis Cache
-  REDIS_ENABLED: "true"
+  BASE_URL: "http://smalllinks-frontend.app.svc.cluster.local"
+  PORT: "8201"
+  SHORTENER_DEBUG: "true"
+  SHORT_URL_LENGTH: "5"
+  SHORT_KEY_GENERATION_RETRIES_COUNT: "5"
+  KAFKA_HOST: "kafka:9092"
   REDIS_HOST: "redis"
   REDIS_PORT: "6379"
-  # General App Settings
-  PORT: "3000"
-  DEFAULT_DOMAIN: "localhost"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  LOG_LEVEL: "info"

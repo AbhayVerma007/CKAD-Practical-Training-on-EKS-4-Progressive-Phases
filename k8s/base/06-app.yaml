@@ -1,70 +1,52 @@
-# ADD: LoadBalancer Service (MISSING!)
 apiVersion: v1
 kind: Service
 metadata:
-  name: kutt-frontend
+  name: smalllinks-frontend
   namespace: app
   labels:
-    app: kutt
+    app: smalllinks
 spec:
   type: LoadBalancer
   ports:
     - port: 80
-      targetPort: 3000
+      targetPort: 8201
       protocol: TCP
       name: http
   selector:
-    app: kutt
+    app: smalllinks
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kutt
+  name: smalllinks
   namespace: app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: kutt
+      app: smalllinks
   template:
     metadata:
       labels:
-        app: kutt
-      # ADD: Prometheus annotations (Phase 2)
+        app: smalllinks
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "3000"
+        prometheus.io/port: "8201"
         prometheus.io/path: "/metrics"
     spec:
       containers:
-        - name: kutt
-          # REPLACE: <your-account-id> with your actual AWS account ID or use variable
-          image: "867490540548.dkr.ecr.us-east-1.amazonaws.com/devops-app:latest"
-          imagePullPolicy: Always  # ADD: Always pull latest
+        - name: smalllinks
+          image: "<ECR_REGISTRY>/smalllinks:latest"
+          imagePullPolicy: Always
           ports:
-            - containerPort: 3000
+            - containerPort: 8201
               name: http
           envFrom:
             - configMapRef:
                 name: app-config
             - secretRef:
                 name: postgres-secret
-          
-          # ==========================================
-          # ADD: ELB URL Configuration for Login Cookies
-          # ==========================================
-          env:
-            - name: DEFAULT_DOMAIN
-              value: "af0fd6ba256e94a83a174fad12f88f65-2108895478.us-east-1.elb.amazonaws.com"
-            - name: SITE_URL
-              value: "http://af0fd6ba256e94a83a174fad12f88f65-2108895478.us-east-1.elb.amazonaws.com"
-            - name: TRUST_PROXY
-              value: "true"
-            - name: COOKIE_SECURE
-              value: "false"  
-
-          # ADD: Resource requests/limits (REQUIRED)
           resources:
             requests:
               cpu: 100m
@@ -72,21 +54,18 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
-          # FIX: livenessProbe - use / which should always exist
           livenessProbe:
             httpGet:
-              path: /
-              port: 3000
+              path: /status
+              port: 8201
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
-          # FIXED: readinessProbe
-          # NOTE: If Kutt doesn't have /healthz, change to /
           readinessProbe:
             httpGet:
-              path: /healthz            # Changed from /healthz if it doesn't exist
-              port: 3000
+              path: /status
+              port: 8201
             initialDelaySeconds: 15
             periodSeconds: 5
             timeoutSeconds: 3

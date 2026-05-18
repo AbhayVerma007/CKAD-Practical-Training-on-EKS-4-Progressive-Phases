@@ -25,6 +25,12 @@ variable "cluster_version" {
   default     = "1.34"
 }
 
+variable "app_name" {
+  description = "Application name for ECR repository"
+  type        = string
+  default     = "smalllinks"
+}
+
 variable "node_group_desired_size" {
   type = number
   default = 2

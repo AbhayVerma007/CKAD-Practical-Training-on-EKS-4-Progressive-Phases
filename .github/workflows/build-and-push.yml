@@ -43,7 +43,8 @@ jobs:
         run: |
           echo "📦 Building image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          docker build -f ./smalllinks/Dockerfile \
+                       -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
                        -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
                        ./smalllinks
           

@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smalllinks-grafana-dashboard
+  namespace: observability
+  labels:
+    # THIS IS THE MAGIC LABEL! It tells Grafana to auto-import this file.
+    grafana_dashboard: "1"
+data:
+  smalllinks-dashboard.json: |-
+    {
+      "title": "Smalllinks Application Metrics",
+      "tags": ["smalllinks", "nodejs", "custom"],
+      "timezone": "browser",
+      "refresh": "10s",
+      "schemaVersion": 36,
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Traffic (Requests Per Second)",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum by (route) (rate(http_requests_total[5m]))",
+              "legendFormat": "{{route}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 10 } }
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "API Latency (95th Percentile)",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_bucket[5m])))",
+              "legendFormat": "{{route}} p95"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "s", "custom": { "drawStyle": "line", "lineInterpolation": "smooth", "fillOpacity": 10 } }
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Redis Cache Hit Ratio",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "targets": [
+            {
+              "expr": "sum(rate(redis_hits_total[5m])) / (sum(rate(redis_hits_total[5m])) + sum(rate(redis_misses_total[5m])))",
+              "legendFormat": "Hit Ratio"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "percentunit", "min": 0, "max": 1, "custom": { "drawStyle": "line", "fillOpacity": 20 } }
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Pod Memory Usage (Working Set)",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "targets": [
+            {
+              "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"app\", pod=~\"smalllinks-.*\", container!=\"\"})",
+              "legendFormat": "{{pod}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "fillOpacity": 30 } }
+          }
+        }
+      ]
+    }

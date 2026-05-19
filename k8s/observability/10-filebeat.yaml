@@ -59,7 +59,8 @@ spec:
         
         volumeMounts:
         - name: config
-          mountPath: /etc/filebeat.yaml
+          # UPDATED: Pointing to the default Elastic image path
+          mountPath: /usr/share/filebeat/filebeat.yml
           subPath: filebeat.yaml
           readOnly: true
         - name: varlog

@@ -83,7 +83,7 @@ spec:
               - curl
               - -f
               - http://localhost:9600/
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 10
         
         readinessProbe:
@@ -92,7 +92,7 @@ spec:
               - curl
               - -f
               - http://localhost:9600/
-          initialDelaySeconds: 10
+          initialDelaySeconds: 30
           periodSeconds: 5
       
       volumes:

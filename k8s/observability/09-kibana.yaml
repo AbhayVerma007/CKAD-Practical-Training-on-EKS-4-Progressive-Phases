@@ -40,6 +40,9 @@ spec:
           value: "http://elasticsearch:9200"
         - name: xpack.security.enabled
           value: "false"
+          # ADD THIS NEW VARIABLE:
+        - name: xpack.encryptedSavedObjects.encryptionKey
+          value: "this-is-a-random-32-character-encryption-key-for-kibana"
         
         resources:
           requests:

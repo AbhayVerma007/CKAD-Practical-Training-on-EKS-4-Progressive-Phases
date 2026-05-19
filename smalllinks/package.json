@@ -39,6 +39,7 @@
     "kafka-node": "^5.0.0",
     "nanoid": "^3.1.25",
     "pg": "^8.5.1",
+    "prom-client": "^13.2.0",
     "redis": "^3.1.2"
   },
   "devDependencies": {

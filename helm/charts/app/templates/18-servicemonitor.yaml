@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: smalllinks-monitor
+  namespace: app
+  labels:
+    # CRITICAL: Prometheus Operator usually looks for this specific label to know it should manage this monitor
+    release: observability-stack 
+spec:
+  selector:
+    matchLabels:
+      app: smalllinks # This must match the label on your smalllinks Service
+  endpoints:
+  - port: http # This must match the name of the port in your smalllinks Service
+    path: /metrics
+    interval: 15s

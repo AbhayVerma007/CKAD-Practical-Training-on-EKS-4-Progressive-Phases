@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sensu-custom-checks
+  namespace: observability
+data:
+  check.yaml: |
+    type: CheckConfig
+    api_version: core/v2
+    metadata:
+      name: elasticsearch-health
+      namespace: default
+    spec:
+      command: "curl -s -f http://elasticsearch.observability.svc.cluster.local:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"
+      subscriptions:
+        - elasticsearch
+      publish: true
+      interval: 30
+      handlers: []

@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sensu-configurator
+  namespace: observability
+  annotations:
+    # sync-wave 5 ensures ArgoCD deploys the Sensu backend BEFORE it runs this job
+    argocd.argoproj.io/sync-wave: "5" 
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      containers:
+      - name: sensu-cli
+        image: sensu/sensu:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Waiting for Sensu API to boot..."
+            sleep 20
+            
+            echo "Logging into Sensu..."
+            sensuctl configure -n \
+              --url http://sensu-backend.observability.svc.cluster.local:8080 \
+              --username admin \
+              --password "AdminPassword123!"
+            
+            echo "Applying Check Configuration..."
+            sensuctl create -f /config/check.yaml
+            
+            echo "Sensu configuration complete!"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+      restartPolicy: OnFailure
+      volumes:
+      - name: config-volume
+        configMap:
+          name: sensu-custom-checks

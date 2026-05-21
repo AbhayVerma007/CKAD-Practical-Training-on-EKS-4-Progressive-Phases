@@ -3,13 +3,15 @@ kind: ServiceMonitor
 metadata:
   name: smalllinks-monitor
   namespace: observability
+  labels:
+    release: observability-stack   # <--- THIS IS THE MAGIC LABEL
 spec:
   namespaceSelector:
     matchNames:
       - app
   selector:
     matchLabels:
-      app: smalllinks # Matches the labels on your deployment/service
+      app: smalllinks
   endpoints:
     - targetPort: 8201
       path: /metrics

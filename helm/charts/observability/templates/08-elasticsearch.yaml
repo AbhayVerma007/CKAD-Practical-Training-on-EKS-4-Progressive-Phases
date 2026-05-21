@@ -95,7 +95,9 @@ spec:
           mountPath: /usr/share/elasticsearch/data
   
   volumeClaimTemplates:
-  - metadata:
+  - apiVersion: v1                  # <--- Add this back
+    kind: PersistentVolumeClaim     # <--- Add this back
+    metadata:
       name: data
     spec:
       accessModes: [ "ReadWriteOnce" ]

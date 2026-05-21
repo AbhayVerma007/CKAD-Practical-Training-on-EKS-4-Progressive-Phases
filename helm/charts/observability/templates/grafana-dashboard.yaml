@@ -46,42 +46,42 @@ data:
           "type": "timeseries",
           "title": "Traffic Trends by Route (RPS)",
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 5 },
-          "targets": [{ "expr": "sum by (route) (rate(http_requests_total[1m]))", "legendFormat": "{{ \"{{route}}\" }}" }],
+          "targets": [{ "expr": "sum by (route) (rate(http_requests_total[1m]))", "legendFormat": "{{ "{{route}}" }}" }],
           "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "fillOpacity": 15, "lineInterpolation": "smooth" } } }
         },
         {
           "type": "timeseries",
           "title": "API Latency (95th Percentile)",
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 5 },
-          "targets": [{ "expr": "histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_bucket[1m])))", "legendFormat": "{{ \"{{route}}\" }} p95" }],
+          "targets": [{ "expr": "histogram_quantile(0.95, sum by (le, route) (rate(http_request_duration_seconds_bucket[1m])))", "legendFormat": "{{ "{{route}}" }} p95" }],
           "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 15, "lineInterpolation": "smooth" } } }
         },
         {
           "type": "timeseries",
           "title": "Pod Memory Usage (Working Set)",
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
-          "targets": [{ "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"app\", pod=~\"smalllinks-.*\", container!=\"\"})", "legendFormat": "{{ \"{{pod}}\" }}" }],
+          "targets": [{ "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"app\", pod=~\"smalllinks-.*\", container!=\"\"})", "legendFormat": "{{ "{{pod}}" }}" }],
           "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "fillOpacity": 25 } } }
         },
         {
           "type": "timeseries",
           "title": "Pod CPU Utilization (Cores)",
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
-          "targets": [{ "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"app\", pod=~\"smalllinks-.*\", container!=\"\"}[1m]))", "legendFormat": "{{ \"{{pod}}\" }}" }],
+          "targets": [{ "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"app\", pod=~\"smalllinks-.*\", container!=\"\"}[1m]))", "legendFormat": "{{ "{{pod}}" }}" }],
           "fieldConfig": { "defaults": { "unit": "none", "custom": { "drawStyle": "line", "fillOpacity": 25 } } }
         },
         {
           "type": "gauge",
           "title": "Node Group CPU (%)",
           "gridPos": { "h": 7, "w": 12, "x": 0, "y": 21 },
-          "targets": [{ "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)", "legendFormat": "{{ \"{{instance}}\" }}" }],
+          "targets": [{ "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)", "legendFormat": "{{ "{{instance}}" }}" }],
           "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 75 }, { "color": "red", "value": 90 }] } } }
         },
         {
           "type": "gauge",
           "title": "Node Group Memory (%)",
           "gridPos": { "h": 7, "w": 12, "x": 12, "y": 21 },
-          "targets": [{ "expr": "100 * (1 - ((avg_over_time(node_memory_MemFree_bytes[5m]) + avg_over_time(node_memory_Cached_bytes[5m]) + avg_over_time(node_memory_Buffers_bytes[5m])) / avg_over_time(node_memory_MemTotal_bytes[5m])))", "legendFormat": "{{ \"{{instance}}\" }}" }],
+          "targets": [{ "expr": "100 * (1 - ((avg_over_time(node_memory_MemFree_bytes[5m]) + avg_over_time(node_memory_Cached_bytes[5m]) + avg_over_time(node_memory_Buffers_bytes[5m])) / avg_over_time(node_memory_MemTotal_bytes[5m])))", "legendFormat": "{{ "{{instance}}" }}" }],
           "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 80 }, { "color": "red", "value": 90 }] } } }
         }
       ]

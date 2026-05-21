@@ -1,0 +1,14 @@
+replicaCount: 2
+image:
+  repository: 867490540548.dkr.ecr.us-east-1.amazonaws.com/smalllinks
+  tag: "latest" # This will be overwritten by CI
+redis:
+  ttl: "86400"
+resources:
+  nodejs:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi

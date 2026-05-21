@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kibana-configurator
+  namespace: observability
+  annotations:
+    # sync-wave 5 ensures Kibana is deployed before this job runs
+    argocd.argoproj.io/sync-wave: "5" 
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      containers:
+      - name: api-caller
+        image: curlimages/curl:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Waiting for Kibana API to boot..."
+            # Kibana takes a minute to start, so we loop until the status API returns 'available'
+            while ! curl -s http://kibana.observability.svc.cluster.local:5601/api/status | grep -q "available"; do
+              echo "Kibana not ready yet, sleeping 10 seconds..."
+              sleep 10
+            done
+            
+            echo "Kibana is up! Creating the logstash-* Data View..."
+            # The API requires the kbn-xsrf header for all state-changing requests
+            curl -s -X POST "http://kibana.observability.svc.cluster.local:5601/api/data_views/data_view" \
+              -H "kbn-xsrf: true" \
+              -H "Content-Type: application/json" \
+              -d '{
+                    "data_view": {
+                      "title": "logstash-*",
+                      "name": "Logstash Logs",
+                      "timeFieldName": "@timestamp"
+                    }
+                  }'
+            
+            echo -e "\nKibana configuration complete!"
+      restartPolicy: OnFailure

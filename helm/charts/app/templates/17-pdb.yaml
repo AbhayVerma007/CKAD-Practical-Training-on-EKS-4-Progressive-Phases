@@ -1,0 +1,25 @@
+---
+# 1. Protect NodeJS (Always keep at least 1 replica alive)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: smalllinks-pdb
+  namespace: app
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: smalllinks
+
+---
+# 2. Protect PostgreSQL (Zero downtime allowed during evictions)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: postgres-pdb
+  namespace: app
+spec:
+  maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: postgres

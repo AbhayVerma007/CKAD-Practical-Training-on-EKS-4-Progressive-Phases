@@ -1,0 +1,104 @@
+---
+# 1. Default Deny-All (with DNS explicitly allowed)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: app
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  egress:
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+
+---
+# 2. Allow Postgres Ingress (Only from NodeJS)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: smalllinks
+    ports:
+    - protocol: TCP
+      port: 5432
+
+---
+# 3. Allow Redis Ingress (Only from NodeJS)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-redis
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: smalllinks
+    ports:
+    - protocol: TCP
+      port: 6379
+
+---
+# 4. Allow NodeJS Ingress & Egress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-nodejs
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app: smalllinks
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from the AWS LoadBalancer / external world
+  - ports:
+    - protocol: TCP
+      port: 8201
+  # Allow Prometheus to scrape metrics from the observability namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: observability
+    ports:
+    - protocol: TCP
+      port: 8201
+  egress:
+  # Allow NodeJS to talk to Postgres, Redis, and Kafka
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+  - to:
+    - podSelector:
+        matchLabels:
+          app: kafka

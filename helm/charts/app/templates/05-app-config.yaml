@@ -6,7 +6,7 @@ metadata:
   labels:
     app: smalllinks
 data:
-  BASE_URL: "abb51aff71d484f55b149af86fb8c14e-1818834111.us-east-1.elb.amazonaws.com"
+  BASE_URL: "a7696b957ce7d48aa8799a5006c4cb0c-439716858.us-east-1.elb.amazonaws.com"
   PORT: "8201"
   SHORTENER_DEBUG: "true"
   SHORT_URL_LENGTH: "5"

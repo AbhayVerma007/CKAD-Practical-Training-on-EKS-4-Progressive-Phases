@@ -102,3 +102,65 @@ spec:
     - podSelector:
         matchLabels:
           app: kafka
+
+---
+# 5. Allow Zookeeper Ingress (Only from Kafka and itself)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-zookeeper
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app: zookeeper
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: kafka
+    - podSelector:
+        matchLabels:
+          app: zookeeper
+    ports:
+    - protocol: TCP
+      port: 2181
+    - protocol: TCP
+      port: 2888
+    - protocol: TCP
+      port: 3888
+
+---
+# 6. Allow Kafka Ingress & Egress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kafka
+  namespace: app
+spec:
+  podSelector:
+    matchLabels:
+      app: kafka
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow NodeJS to send data to Kafka
+  - from:
+    - podSelector:
+        matchLabels:
+          app: smalllinks
+    ports:
+    - protocol: TCP
+      port: 9092
+  egress:
+  # Allow Kafka to coordinate with Zookeeper
+  - to:
+    - podSelector:
+        matchLabels:
+          app: zookeeper
+    ports:
+    - protocol: TCP
+      port: 2181

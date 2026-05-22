@@ -49,16 +49,24 @@ module "eks" {
     aws-ebs-csi-driver = {
       most_recent = true
     }
+    # ADDED: Make Network Policies permanent on cluster creation
+    vpc-cni = {
+      most_recent                 = true
+      resolve_conflicts_on_create = "OVERWRITE"
+      configuration_values = jsonencode({
+        enableNetworkPolicy = "true"
+      })
+    }
   }
 
   cluster_security_group_additional_rules = {
     egress_nodes_ephemeral_ports_tcp = {
-      description                = "Nodes on ephemeral ports"
-      protocol                   = "tcp"
-      from_port                  = 1025
-      to_port                    = 65535
-      type                       = "egress"
-      source_security_group_id   = module.eks.node_security_group_id
+      description              = "Nodes on ephemeral ports"
+      protocol                 = "tcp"
+      from_port                = 1025
+      to_port                  = 65535
+      type                     = "egress"
+      source_security_group_id = module.eks.node_security_group_id
     }
   }
 
@@ -68,6 +76,7 @@ module "eks" {
       use_name_prefix = true
       
       subnet_ids      = module.vpc.private_subnets
+  
       instance_types = [var.node_instance_type]
       
       desired_size = var.node_group_desired_size
@@ -82,6 +91,8 @@ module "eks" {
         AmazonEKS_CNI_Policy               = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
         AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
         AmazonEBSCSIDriverPolicy           = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+        # ADDED: Allow nodes to fetch secrets for External Secrets Operator
+        SecretsManagerReadAccess           = aws_iam_policy.eks_secrets_manager_policy.arn
       }
 
       tags = {
@@ -93,6 +104,25 @@ module "eks" {
   tags = {
     Name = "${var.cluster_name}-eks"
   }
+}
+
+# ADDED: IAM Policy for External Secrets Operator (Secrets Manager Access)
+resource "aws_iam_policy" "eks_secrets_manager_policy" {
+  name        = "${var.cluster_name}-${var.environment}-secrets-policy"
+  description = "Allows EKS nodes to read from AWS Secrets Manager for ESO"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = "*" # Can be scoped down to specific ARNs in a strict production environment
+      }
+    ]
+  })
 }
 
 # ECR Repository

@@ -1,4 +1,7 @@
 # Terraform
+*tfplan*
+*.tfplan
+*.plan
 .terraform/
 *.tfstate
 *.tfstate.*
